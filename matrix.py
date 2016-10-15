@@ -2,41 +2,52 @@ import numpy
 import pandas
 import io
 import os
+from sklearn.cross_validation import train_test_split
 
-ENCODING = 'utf-8'
+ENCODING = 'ASCII'
 FILE_PATH = 'example.csv'
-# FILE_SOURCE = '1.csv'
-FILE_SOURCE ='new_raw.txt'
+# FILE_SOURCE = '1.tsv'
+FILE_SOURCE ='ratings.dat'
+TRAIN_SOURCE = 'train_file.csv'
+TEST_SOURCE = 'test_file.csv'
 
+def train_test(data):
+    seed = 8
+    numpy.random.seed(seed)
+    train_file,test_file = train_test_split(data,test_size = 0.2, random_state = seed)
+    create_file(train_file,TRAIN_SOURCE)
+    create_file(test_file,TEST_SOURCE)
 def get_list():
-    music_list ={}
+    movie_list ={}
     user_list = {}
-    with io.open(FILE_SOURCE, 'r', encoding=ENCODING) as source:
+    with io.open(TRAIN_SOURCE, 'r', encoding=ENCODING) as source:
         for lines in source:
-            line = lines.split('\t')
-            music_list[line[1]] = 0
-            user_list[line[0]] = 0
-        return music_list,user_list
+            line = lines.strip().split(',')
+            movie_list[line[2]] = 0
+            user_list[line[1]] = 0
+    return movie_list,user_list
 
-def create_file(data):
-    if not os.path.exists(FILE_PATH) or  os.stat(FILE_PATH).st_size == 0 :
-        with io.open(FILE_PATH,'w+',encoding = ENCODING):
+def create_file(data,path):
+    if not os.path.exists(path) or  os.stat(FILE_PATH).st_size == 0 :
+        with io.open(path,'w+',encoding = ENCODING):
             print "creating file..."
-    data.to_csv(FILE_PATH, encoding=ENCODING)
-    print 'finish '
+    data.to_csv(path, encoding=ENCODING)
+    print 'finish'
 
 def create_matrix():
-    music_list,user_list = get_list()
+    source = pandas.read_csv(FILE_SOURCE,delimiter ='::',encoding=ENCODING)
+    train_test(source)
+    movie_list,user_list = get_list()
     # range(0, len(user_list.keys()))
-    data = pandas.DataFrame(0,columns=user_list.keys(),index=music_list.keys(),dtype='uint8')
-    with io.open(FILE_SOURCE, 'r', encoding=ENCODING) as source:
+    data = pandas.DataFrame(0,columns=user_list.keys(),index=movie_list.keys(),dtype='uint8')
+    with io.open(TRAIN_SOURCE, 'r', encoding=ENCODING) as source:
         for i,lines in enumerate(source,0):
-            line = lines.split('\t')
-            data.loc[line[1]][line[0]] = line[2].strip('\n')
-    create_file( data= data)
+            line = lines.split(',')
+            data.loc[line[2]][line[1]] = line[3]
+    create_file( data= data,path=FILE_PATH)
 
 def get_matrix():
-    data = pandas.DataFrame.from_csv(FILE_PATH,encoding = ENCODING)
+    data = pandas.DataFrame.from_csv(TRAIN_SOURCE,encoding = ENCODING)
     return data
 
 if __name__ == "__main__":
