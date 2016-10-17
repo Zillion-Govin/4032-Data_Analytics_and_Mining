@@ -5,7 +5,7 @@ import os
 from sklearn.cross_validation import train_test_split
 
 ENCODING = 'ASCII'
-FILE_PATH = 'example.csv'
+FILE_PATH = 'matrix.csv'
 # FILE_SOURCE = '1.tsv'
 FILE_SOURCE ='ratings.dat'
 TRAIN_SOURCE = 'train_file.csv'
@@ -17,33 +17,64 @@ def train_test(data):
     train_file,test_file = train_test_split(data,test_size = 0.2, random_state = seed)
     create_file(train_file,TRAIN_SOURCE)
     create_file(test_file,TEST_SOURCE)
-def get_list():
+
+def get_list(type):
     movie_list ={}
     user_list = {}
-    with io.open(TRAIN_SOURCE, 'r', encoding=ENCODING) as source:
-        for lines in source:
-            line = lines.strip().split(',')
-            movie_list[line[2]] = 0
-            user_list[line[1]] = 0
+    # with io.open(TRAIN_SOURCE, 'r', encoding=ENCODING) as source:
+    #     for lines in source:
+    #         line = lines.strip().split(',')
+    #         movie_list[line[2]] = 0
+    #         user_list[line[1]] = 0
+    if type == 'normal':
+        with io.open(FILE_SOURCE, 'r', encoding=ENCODING) as source:
+            for lines in source:
+                line = lines.strip().split('::')
+                movie_list[line[1]] = 0
+                user_list[line[0]] = 0
+    elif type == 'train':
+        with io.open(TRAIN_SOURCE, 'r', encoding=ENCODING) as source:
+            for lines in source:
+                line = lines.strip().split(',')
+                movie_list[line[2]] = 0
+                user_list[line[1]] = 0
+    else:
+        with io.open(TEST_SOURCE, 'r', encoding=ENCODING) as source:
+            for lines in source:
+                line = lines.strip().split(',')
+                movie_list[line[2]] = 0
+                user_list[line[1]] = 0
+
     return movie_list,user_list
 
 def create_file(data,path):
-    if not os.path.exists(path) or  os.stat(FILE_PATH).st_size == 0 :
+    if not os.path.exists(path):
         with io.open(path,'w+',encoding = ENCODING):
             print "creating file..."
     data.to_csv(path, encoding=ENCODING)
     print 'finish'
 
-def create_matrix():
+def create_matrix(type = 'normal'):
     source = pandas.read_csv(FILE_SOURCE,delimiter ='::',encoding=ENCODING)
     train_test(source)
-    movie_list,user_list = get_list()
+    movie_list,user_list = get_list(type)
     # range(0, len(user_list.keys()))
     data = pandas.DataFrame(0,columns=user_list.keys(),index=movie_list.keys(),dtype='uint8')
-    with io.open(TRAIN_SOURCE, 'r', encoding=ENCODING) as source:
-        for i,lines in enumerate(source,0):
-            line = lines.split(',')
-            data.loc[line[2]][line[1]] = line[3]
+    if type =='normal':
+        with io.open(FILE_SOURCE, 'r', encoding=ENCODING) as source:
+            for i, lines in enumerate(source, 0):
+                line = lines.split('::')
+                data.loc[line[1]][line[0]] = line[2]
+    elif type=='train':
+        with io.open(TRAIN_SOURCE, 'r', encoding=ENCODING) as source:
+            for i, lines in enumerate(source, 0):
+                line = lines.split(',')
+                data.loc[line[2]][line[1]] = line[3]
+    else:
+        with io.open(TEST_SOURCE, 'r', encoding=ENCODING) as source:
+            for i, lines in enumerate(source, 0):
+                line = lines.split(',')
+                data.loc[line[2]][line[1]] = line[3]
     create_file( data= data,path=FILE_PATH)
 
 def get_matrix():
@@ -51,5 +82,5 @@ def get_matrix():
     return data
 
 if __name__ == "__main__":
-    create_matrix()
+    create_matrix(type = 'normal')
     # print get_matrix()
