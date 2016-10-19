@@ -52,5 +52,5 @@ def correlation_similarity(source_df):
 
 # MAIN
 # uncomment to run
-# cosine_similarity(source_df)
-correlation_similarity(source_df)
+cosine_similarity(source_df)
+# correlation_similarity(source_df)
