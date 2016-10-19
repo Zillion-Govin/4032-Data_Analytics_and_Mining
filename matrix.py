@@ -5,7 +5,8 @@ import os
 from sklearn.cross_validation import train_test_split
 
 ENCODING = 'ASCII'
-FILE_PATH = 'matrix.csv'
+FILE_PATH = 'matrix_userxmovies.csv'
+MAT = 'matrix.csv'
 # FILE_SOURCE = '1.tsv'
 FILE_SOURCE ='ratings.dat'
 TRAIN_SOURCE = 'train_file.csv'
@@ -78,9 +79,11 @@ def create_matrix(type = 'normal'):
     create_file( data= data,path=FILE_PATH)
 
 def get_matrix():
-    data = pandas.DataFrame.from_csv(TRAIN_SOURCE,encoding = ENCODING)
+    data = pandas.DataFrame.from_csv(MAT,encoding = ENCODING)
     return data
 
 if __name__ == "__main__":
-    create_matrix(type = 'normal')
+    # create_matrix(type = 'normal')
     # print get_matrix()
+    df = get_matrix()
+    create_file(df.T,FILE_PATH)
