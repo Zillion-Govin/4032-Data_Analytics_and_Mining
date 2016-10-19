@@ -76,6 +76,7 @@ def create_matrix(type = 'normal'):
             for i, lines in enumerate(source, 0):
                 line = lines.split(',')
                 data.loc[line[2]][line[1]] = line[3]
+    data.replace(0,numpy.NaN,inplace=True)
     create_file( data= data,path=FILE_PATH)
 
 def get_matrix():
@@ -83,7 +84,7 @@ def get_matrix():
     return data
 
 if __name__ == "__main__":
-    # create_matrix(type = 'normal')
+    create_matrix(type = 'normal')
     # print get_matrix()
-    df = get_matrix()
-    create_file(df.T,FILE_PATH)
+    # df = get_matrix()
+    # create_file(df.T,FILE_PATH)
