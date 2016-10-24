@@ -5,7 +5,7 @@ import os
 from sklearn.cross_validation import train_test_split
 
 ENCODING = 'ASCII'
-FILE_PATH = 'dataset_matrix\\matrix_test.csv'
+FILE_PATH = 'dataset_matrix\\matrix.csv'
 TRAIN_SOURCE = 'dataset_partitioned\\ratings_training.dat'
 TEST_SOURCE = 'dataset_partitioned\\ratings_test.dat'
 
@@ -34,14 +34,14 @@ def create_matrix(path,dest):
         for i, lines in enumerate(source, 0):
             line = lines.split('::')
             data.loc[line[1]][line[0]] = line[2]
-    create_file( data= data.T,path=dest)
+    create_file( data= data,path=dest)
 
 def get_matrix(path):
     data = pandas.DataFrame.from_csv(path,encoding = ENCODING)
     return data
 
 if __name__ == "__main__":
-    create_matrix(path = TEST_SOURCE,dest = FILE_PATH)
+    create_matrix(path = TRAIN_SOURCE,dest = FILE_PATH)
     # print get_matrix()
     # df = get_matrix()
     # create_file(df.T,FILE_PATH)
