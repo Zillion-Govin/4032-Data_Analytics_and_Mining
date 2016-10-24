@@ -1,61 +1,138 @@
-with open("matrix.txt",'r') as myFile:
-    doc = myFile.read().split('\n')
-doc = [i.split(',') for i in doc]
-
-num_song = len(doc)
-cosineSim = [[-100 for i in range(num_song)] for j in range(num_song)]
-##absolVal = [0 for i in range(num_song)]
-num_user = len(doc[0])
-
-print(num_song)
-print(num_user)
-##print(num_user)
-for i in range(1,num_song):
-    for j in range(i,num_song):
-        temp = 0.0
-        tempI = 0.0
-        tempJ = 0.0
-        for k in range(1,num_user):
-            if((int(doc[i][k]) == 0) or (int(doc[j][k]) == 0)):
-                pass
+import numpy as np
+import time
+import pandas as pd
+import io
+import os
+from scipy.spatial.distance import cosine
+ENCODING = 'ASCII'
+FILE_SOURCE = 'testing2.csv'
+source = pd.read_csv(FILE_SOURCE, delimiter =',', encoding = ENCODING)
+path_cosine = os.path.join('D:\\', 'CZ4032', 'cosine_laast.csv')
+path_adjusted = os.path.join('D:\\', 'CZ4032', 'aaadjusted_last.csv')
+path_correlation = os.path.join('D:\\','CZ4032','corelation_last.csv')
+def cosine_similarity():
+    sou = pd.read_csv(FILE_SOURCE, delimiter = ',' , encoding = ENCODING)
+    indexing = get_list()
+    df = pd.DataFrame(float(0), index = indexing, columns = indexing)
+    num_movie = len(indexing)
+    for i in range(0,num_movie):
+        for j in range(i,num_movie):
+            tempMatrix = sou.iloc[[i,j],1:].T
+            tempMatrix = tempMatrix.dropna(how='any')
+            '''if(tempI == 0 or tempJ == 0):
+                cosineSim[i][j] = -10
+                cosineSim[j][i] = -10
             else:
-                temp += float(doc[i][k])*float(doc[j][k])
-                tempI += float(doc[i][k])**2
-                tempJ += float(doc[j][k])**2
-        if(tempI == 0 or tempJ == 0):
-            cosineSim[i][j] = -10
-            cosineSim[j][i] = -10
-        else:
-            cosineSim[i][j] = float("{0:.2f}".format(temp/((tempI**0.5)*(tempJ**0.5))))
-            cosineSim[j][i] = cosineSim[i][j]
-    print("i :" + str(i) )
-    cosineSim[i][0] = cosineSim[0][i] = doc[i][0]        
+                cosineSim[i][j] = float("{0:.2f}".format(temp/((tempI**0.5)*(tempJ**0.5))))
+                cosineSim[j][i] = cosineSim[i][j]'''
+            
+            if(tempMatrix.empty):
+                result = 0
+            else:
+                result = float("{0:.2f}".format(1-cosine(tempMatrix.iloc[:,0],tempMatrix.iloc[:,1])))
+            df.iat[i,j] = result
+            df.iat[j,i] = result
+        print(i)
+    print(df)
+    create_file(df,path_cosine)
+    
+    
+def correlation_similarity():
+    sou = pd.read_csv(FILE_SOURCE, delimiter = ',' , encoding = ENCODING)
+    indexing = get_list()
+    print(sou)
+    df = pd.DataFrame(float(0), index = indexing, columns = indexing)
+    sou = sou.set_index(indexing).T
+    averrating = sou.iloc[1:,:].mean()
+    print(averrating)
+    sou = sou.T.sub(averrating,axis='index').T
+    print(sou)
+    num_movie = len(indexing)
+    for i in range(0,num_movie):
+        starttime = time.time()
+        for j in range(i,num_movie):
+            tempMatrix = sou.iloc[1:,[i,j]]
+            tempMatrix = tempMatrix.dropna(how='any')
+            '''if(tempI == 0 or tempJ == 0):
+                cosineSim[i][j] = -10
+                cosineSim[j][i] = -10
+            else:
+                cosineSim[i][j] = float("{0:.2f}".format(temp/((tempI**0.5)*(tempJ**0.5))))
+                cosineSim[j][i] = cosineSim[i][j]'''
+            
+            if(tempMatrix.empty):
+                result = 0
+            else:
+                result = float("{0:.2f}".format(2-cosine(tempMatrix.iloc[:,0],tempMatrix.iloc[:,1])))/2
+            df.iat[i,j] = result
+            df.iat[j,i] = result
+            print(result)
+        stoptime=time.time()-starttime
+        print(i)
+        print(stoptime)
+    create_file(df,path_correlation)
+    
+def adjusted_cosine_similarity():
+    sou = pd.read_csv(FILE_SOURCE, delimiter = ',' , encoding = ENCODING)
+    indexing = get_list()
+    df = pd.DataFrame(float(0), index = indexing, columns = indexing)
+    num_movie = len(indexing)
+    averrating = pd.Series(float(0), index = sou.columns)
+    num_user = sou.shape[1]
+    bu = sou.mean()
+    print("user rating raw done")
+    alpha = 1
+    ru = pd.Series(float(0), index = sou.columns)
+    total_valid= 0.0
+    total_data = 0.0
+    for i in range(1, num_user):
+        ru.iat[i] = len(sou.iloc[:,i].dropna(how='any'))
+        total_valid+= ru.iat[i]
+        total_data += bu[i]*ru.iat[i]
+    print("|RU| done")
+    globalmean = total_data/total_valid
+    print("global mean done")
+    
+    for i in range(1, num_user):
+        averrating.iat[i]=alpha/(alpha+ru[i])*globalmean+ru[i]/(alpha+ru[i])*bu[i]
+    print("normalized user rating done")
+    
+    for i in range(0,num_movie):
+        starttime = time.time()
+        for j in range(i,num_movie):
+            tempMatrix = sou.iloc[[i,j],1:].T.sub(averrating,axis='index').dropna(how='any')
+            
+            '''if(tempI == 0 or tempJ == 0):
+                cosineSim[i][j] = -10
+                cosineSim[j][i] = -10
+            else:
+                cosineSim[i][j] = float("{0:.2f}".format(temp/((tempI**0.5)*(tempJ**0.5))))
+                cosineSim[j][i] = cosineSim[i][j]'''
+            
+            if(tempMatrix.empty):
+                result = 0
+            else:
+                result = float("{0:.2f}".format(2-cosine(tempMatrix.iloc[:,0],tempMatrix.iloc[:,1])))/2
+            df.iat[i,j] = result
+            df.iat[j,i] = result
 
-##for i in range(0,num_song):
-##    print(cosineSim[i])
+        stoptime=time.time()-starttime
+        print(i)
+        print(stoptime)
+    create_file(df,path_adjusted)
+    print(df)
+            
+    
+def create_file(data,path):
+    if not os.path.exists(path):
+        with io.open(path,'w+',encoding = ENCODING):
+            print ("creating file...")
+    data.to_csv(path, encoding=ENCODING)
+    print ('finish')
 
-##correlationSim = [[-100 for i in range(num_song)] for j in range(num_song)]
-##
-##averRating = [0 for i in range(num_song)]
-##for i in range(1,num_song):
-##    for j in range(1,num_user):
-##        averRating[i] += float(doc[i][j]) 
-##    averRating[i] = averRating[i]/(num_user-1)
-##    
-##for i in range(1,num_song):
-##    for j in range(i,num_song):
-##        totaltemp = 0.0
-##        totaltempUI =0.0
-##        totaltempUJ =0.0
-##        for k in range(1,num_user):
-##            tempUI = float(doc[i][k]) - averRating[i]
-##            tempUJ = float(doc[j][k]) - averRating[j]
-##            totaltemp += tempUI*tempUJ
-##            totaltempUI += tempUI**2
-##            totaltempUJ += tempUJ**2
-##        correlationSim[i][j] = float("{0:.2f}".format((totaltemp/((totaltempUI**0.5)*(totaltempUJ**0.5))+1)/2))
-##        correlationSim[j][i] = correlationSim[i][j]
-##    correlationSim[i][0] = correlationSim[0][i] = doc[i][0]        
-##
-##for i in range(0,num_song):
-##    print(correlationSim[i])
+def get_list():
+    movie_list = source.iloc[:,0]
+    return (movie_list)
+
+    
+    
