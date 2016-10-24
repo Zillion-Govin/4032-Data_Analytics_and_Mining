@@ -33,7 +33,8 @@ def create_matrix(path,dest):
     with io.open(path, 'r', encoding=ENCODING) as source:
         for i, lines in enumerate(source, 0):
             line = lines.split('::')
-            data.loc[line[1]][line[0]] = line[2]
+            data.loc[line[1]][line[0]] = int(line[2])
+    data.replace(0, numpy.NaN, inplace=True)
     create_file( data= data,path=dest)
 
 def get_matrix(path):
