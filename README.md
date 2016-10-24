@@ -1,8 +1,13 @@
-# Music_Recommendation
-script:
-* new_user > make a file containing list of user with unique song played > 2
-* new_raw > filter raw for only user contained in new_user
+# Movie Recommendation
 
-Use new_raw as the new raw data.
+dataset_raw
+* raw MovieLens dataset
 
-transform it to matrix and do similarity matrix
+dataset_partitioned
+* training testing dataset (.dat)
+
+dataset_matrix
+* training dataset in matrix form (.csv)
+
+similarity_matrix
+* matrices for cosine, correlation, adjusted cosine (.csv)
