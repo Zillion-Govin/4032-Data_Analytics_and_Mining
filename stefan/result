@@ -1,0 +1,9 @@
+train/test farris - cosine similarity with 0 - train ratings*similarity
+1,2,5,10,20,40,100,200,500,1000 - [6.2733758650712419, 4.9993743729822873, 2.8884775606172353, 2.993266728394397, 3.4485437592770678, 3.9762692045214525, 4.8085359547979447, 5.5641801204345178, 6.8615678571739771, 8.0858171685177407]
+3,4,5,6,7 - [3.2145863, 2.9625843, 2.888478, 2.8690367, 2.870496]
+
+cosine similarity with 0 - train ratings*1 - 
+cosine similarity without 0 - train ratings * similarity - 
+cosine similarity without 0 adjusted (decrease by global mean)
+cosine similarity without 0 adjusted (decrease by global mean + shrink)
+correlation without 0
