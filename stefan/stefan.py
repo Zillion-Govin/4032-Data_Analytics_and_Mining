@@ -56,11 +56,12 @@ def topk_mse(train,test,item_sim,k):
         starttime=time.time()
     print(k_mse)
 
-def topk_to_file(writePathName, item_sim,k):
+def topk_to_file(writePathName, similarity,k):
     writeStr = []
-    top10 = get_topk_pos(item_sim,k) # without the item itself
+    top10 = np.argpartition(-similarity,[i for i in range(k+1)])[:,1:k+1] # without the item itself
     for i in range(len(top10)):
-        writeStr.append("{}:{}".format(index2_id[i],",".join([str(index2_id[j]) for j in top10[i]])))
+        writeStr.append("{}:{}".format(index2_id[i],
+                        ",".join(["{}={}".format(index2_id[j],similarity[i,j]) for j in top10[i]])))
     writeStr = "\n".join(writeStr)
     with open(writePathName, 'w') as writeFile:
         writeFile.write(writeStr)
@@ -113,7 +114,7 @@ print(test[:4,:4])
 k = [1,2,5,10,20,40,100,200]#,500]
 #k = [3,4,5,6,7]
 
-topk_mse(train,test,item_sim,k)
+#topk_mse(train,test,item_sim,k)
 
 writePath = "top10.txt"
 topk_to_file(writePath,item_sim,10)
