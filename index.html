@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script src="recommendation\recommendation.js"></script>
+
+		<title>MovieLens Recommender</title>
+	</head>
+
+	<body>
+
+		<div id="recommended">
+			
+		</div>
+
+		<script>
+
+			$(document).ready(function () {
+
+				$.each(data, function(title, recommendations){
+					$("#recommended").append('<h2>' + title + '</h2>')
+					$("#recommended").append('<ul>')
+
+					for (var i = 0; i < data[title].length; i++){
+						$("#recommended").append('<li>' + data[title][i] + '</li>')
+					}
+
+					$("#recommended").append('</ul>')
+
+				});
+			  
+			});
+			
+		</script>
+	</body>
+
+</html>
