@@ -3,9 +3,9 @@
 <html>
 	<head>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		<script src="recommendation\recommendation.js"></script>
+		<script src="result\top10_similar.js"></script>
 
-		<title>MovieLens Recommender</title>
+		<title>Similar Movies</title>
 	</head>
 
 	<body>
@@ -20,14 +20,12 @@
 
 				$.each(data, function(title, recommendations){
 					$("#recommended").append('<h2>' + title + '</h2>')
-					$("#recommended").append('<ul>')
 
 					for (var i = 0; i < data[title].length; i++){
-						$("#recommended").append('<li>' + data[title][i] + '</li>')
+						$("#recommended").append('<img src=' + data[title][i][1] + ' alt = "' + data[title][i][0] +'" height = "320" width = "200">')
 					}
 
-					$("#recommended").append('</ul>')
-
+					$("#recommended").append('</br>')
 				});
 			  
 			});
