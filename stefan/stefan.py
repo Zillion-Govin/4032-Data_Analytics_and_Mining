@@ -21,7 +21,6 @@ def predict_wsum(ratings,similarity):
     return ratings.dot(similarity)/ np.array([np.abs(similarity).sum(axis=0)])
     
 def predict_topk(ratings,similarity,k):
-    np.fill_diagonal(similarity,0)
     pred = np.zeros(ratings.shape).astype(np.float32)
     topk = get_topk_pos(similarity,k)
     for i in range(len(topk)):
@@ -49,6 +48,7 @@ def topk_mse(train,test,item_sim,k):
     test_mse = []
     train_mse = []
     print("starting top-k MSE")
+    np.fill_diagonal(item_sim,0)
     for i in k:
         starttime = time.time()
         prediction = predict_topk(train,item_sim,i)
@@ -70,7 +70,7 @@ def topk_to_file(writePathName, similarity,k):
     with open(writePathName, 'w') as writeFile:
         writeFile.write(writeStr)
         
-def load_kc_sim(pathName,id_to_idx):
+def load_kc_sim(pathName,id_to_idx,eps=1e-9):
     temp = pd.read_csv(pathName, sep=',').values
     movie_id = temp[:,0].astype(np.int32)
     temp_sim = temp[:,1:].astype(np.float32)
@@ -81,12 +81,12 @@ def load_kc_sim(pathName,id_to_idx):
         for j in range(len(movie_id)):
             sim[id_to_idx[movie_id[i]],id_to_idx[movie_id[j]]] = temp_sim[i,j]
     print("Sim matrix loaded ,time:{}".format(time.time()-starttime))    
-    return sim
+    return sim+eps
         
 trainingPathName = "./../dataset_partitioned/ratings_training.csv"
 testPathName = "./../dataset_partitioned/ratings_test.csv"
 headerName = ['user_id','item_id','rating','timestamp']
-simName = "./../similarity_matrix/" + "similarity_cosine" + ".csv"
+simName = "./../similarity_matrix/" + "similarity_adjusted_cosine" + ".csv"
 
 
 train_df = loadDF(trainingPathName,headerName)
@@ -129,9 +129,9 @@ item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
 
 #print(test[:4,:4])
-#k = [1,2,5,10,20,40,100]#,200,500]
+k = [1,2,5,10,20,40,100]#,200,500]
 #k = [3,4,5,6,7,8,9]
-#topk_mse(train,test,item_sim,k)
+topk_mse(train,test,item_sim,k)
 
-writePath = "top10-cosine_without_0.txt"
+writePath = "top10-adjusted_cosine.txt"
 topk_to_file(writePath,item_sim,10)

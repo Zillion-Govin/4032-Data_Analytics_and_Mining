@@ -2,8 +2,15 @@ train/test farris - cosine similarity with 0 - train ratings*similarity
 1,2,5,10,20,40,100 - [8.1357651, 6.6386051, 5.8935413, 5.7441397, 5.7975049, 6.0235305, 6.5745406]
 3,4,5,6,7,8,9 - [6.2077298, 6.0106487, 5.8935413, 5.8109488, 5.7764754, 5.7539525, 5.7513766]
 
-cosine similarity with 0 - train ratings*1 - 
-cosine similarity without 0 - train ratings * similarity - 
-cosine similarity without 0 adjusted (decrease by global mean)
+cosine similarity with 0 - train ratings*1
+
+cosine similarity without 0 - train ratings * similarity 
+1,2,5,10,20,40,100 - [13.972705, 13.899226, 13.960968, 13.967505, 13.973282, 13.975165, 13.976145]
+
 cosine similarity without 0 adjusted (decrease by global mean + shrink)
-correlation without 0
+1,2,5,10,20,40,100 - 
+
+correlation without 0 - train rating * similarity
+1,2,5,10,20,40,100 - [14.00118, 13.940234, 13.974005, 13.975665, 13.978459, 13.978997, 13.971146]
+
+user-based -cosine sim with 0- rating * sim
