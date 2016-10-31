@@ -3,8 +3,14 @@
 import os
 import json
 
-sim_file = os.path.join('..', 'stefan', 'top10-basic.txt')
-# movie_file = os.path.join('..', 'dataset_raw', 'movies.dat')
+# sim_file = os.path.join('..', 'stefan', 'top10-basic.txt')
+# sim_file = os.path.join('..', 'stefan', 'top10-correlation_without_0.txt')
+sim_file = os.path.join('..', 'stefan', 'top10-cosine_without_0.txt')
+
+# target_file = 'top10-basic.js'
+# target_file = 'top10-correlation_without_0.js'
+target_file = 'top10-cosine_without_0.js'
+
 movie_file = os.path.join('..', 'dataset_raw', 'movies_image.dat')
 
 def write_json(movie, lookup):
@@ -17,7 +23,7 @@ def write_json(movie, lookup):
 			j = i.split('=')[0]
 			obj[lookup[k][0]].append([lookup[j][0], lookup[j][1]])
 
-	with open('top10_similar.js', 'a') as target:
+	with open(target_file, 'w') as target:
 		target.write('var data = ')
 		json_str = json.dumps(obj, ensure_ascii = False, indent = 2)
 		target.write(json_str)
