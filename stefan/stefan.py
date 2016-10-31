@@ -124,8 +124,8 @@ print("Train Sparsity: {:6.2f}%".format(sparsity))
 sparsity = float(len(test.nonzero()[0])) / n_user / n_item * 100
 print("Test Sparsity: {:6.2f}%".format(sparsity))
 
-item_sim = cos_sim(train)
-#item_sim = load_kc_sim(simName,id2_index)
+#item_sim = cos_sim(train)
+item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
 
 #print(test[:4,:4])
@@ -133,5 +133,5 @@ print(item_sim[:4,:4])
 #k = [3,4,5,6,7,8,9]
 #topk_mse(train,test,item_sim,k)
 
-writePath = "top10-basic.txt"
+writePath = "top10-cosine_without_0.txt"
 topk_to_file(writePath,item_sim,10)
