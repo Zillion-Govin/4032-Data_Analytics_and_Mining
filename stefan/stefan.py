@@ -8,7 +8,8 @@ Created on Wed Oct 19 21:22:44 2016
 import numpy as np
 import pandas as pd
 import time
-from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import mean_squared_error as mse, mean_absolute_error as mae
+from sklearn.metrics import pairwise_distances as distance
 
 def cos_sim(matrix, epsilon=1e-9):
     sim = matrix.T.dot(matrix) + epsilon
@@ -29,10 +30,13 @@ def predict_topk(ratings,similarity,k):
         pred[:,i] = new_rating.dot(new_sim)/np.array([np.abs(new_sim).sum(axis=0)])
     return pred       
     
-def get_mse(pred, actual):
+def get_score(pred, actual):
     pred = pred[actual.nonzero()].flatten()
     actual = actual[actual.nonzero()].flatten()
-    return mse(pred, actual)    
+    mseResult = mse(pred,actual)
+    maeResult = mae(pred,actual)
+    print("MSE = {}, MAE = {}".format(mseResult,maeResult))
+    return mseResult    
     
 def loadDF(pathName,name,cut_last=True):
     temp_df = pd.read_csv(pathName, sep=',', names=name)
@@ -53,8 +57,8 @@ def topk_mse(train,test,item_sim,k):
         starttime = time.time()
         prediction = predict_topk(train,item_sim,i)
         #print(prediction[:4,:4])
-        train_mse.append(get_mse(prediction,train))
-        test_mse.append(get_mse(prediction,test))
+        train_mse.append(get_score(prediction,train))
+        test_mse.append(get_score(prediction,test))
         print("k={}, time={}".format(i,time.time()-starttime))
     print("Train\t: {}".format(train_mse))
     print("Test\t: {}".format(test_mse))
@@ -86,7 +90,7 @@ def load_kc_sim(pathName,id_to_idx,eps=1e-9):
 trainingPathName = "./../dataset_partitioned/ratings_training.csv"
 testPathName = "./../dataset_partitioned/ratings_test.csv"
 headerName = ['user_id','item_id','rating','timestamp']
-simName = "./../similarity_matrix/" + "similarity_adjusted_cosine" + ".csv"
+simName = "./../similarity_matrix/" + "newest_adjusted_cosine" + ".csv"
 
 
 train_df = loadDF(trainingPathName,headerName)
@@ -125,13 +129,14 @@ sparsity = float(len(test.nonzero()[0])) / n_user / n_item * 100
 print("Test Sparsity: {:6.2f}%".format(sparsity))
 
 #item_sim = cos_sim(train)
-item_sim = load_kc_sim(simName,id2_index)
+item_sim = 1-distance(train.T, metric='cosine')
+#item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
 
 #print(test[:4,:4])
-k = [1,2,5,10,20,40,100]#,200,500]
-#k = [3,4,5,6,7,8,9]
+#k = [1,2,5,10,20,40,100]#,200,500]
+k = [10,11,12,13,14,15]
 topk_mse(train,test,item_sim,k)
 
-writePath = "top10-adjusted_cosine.txt"
-topk_to_file(writePath,item_sim,10)
+#writePath = "top10-adjusted_cosine.txt"
+#topk_to_file(writePath,item_sim,10)
