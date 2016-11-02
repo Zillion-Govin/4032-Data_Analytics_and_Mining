@@ -18,7 +18,6 @@ def cos_sim(matrix, epsilon=1e-9):
     return (sim/norms/norms.T)
 
 def predict_wsum(ratings,similarity):
-    #print(np.array([np.abs(similarity).sum(axis=1)]))
     return ratings.dot(similarity)/ np.array([np.abs(similarity).sum(axis=0)])
     
 def predict_topk(ratings,similarity,k):
@@ -27,8 +26,8 @@ def predict_topk(ratings,similarity,k):
     for i in range(len(topk)):
         new_sim = similarity[i,topk[i]]
         new_rating = ratings[:,topk[i]]
-        pred[:,i] = new_rating.dot(new_sim)/np.array([np.abs(new_sim).sum(axis=0)])
-    return pred       
+        pred[:,i] = predict_wsum(new_rating,new_sim)
+    return pred
     
 def get_score(pred, actual):
     pred = pred[actual.nonzero()].flatten()
@@ -136,7 +135,7 @@ print(item_sim[:4,:4])
 #print(test[:4,:4])
 #k = [1,2,5,10,20,40,100]#,200,500]
 k = [10,11,12,13,14,15]
-topk_mse(train,test,item_sim,k)
+#topk_mse(train,test,item_sim,k)
 
 #writePath = "top10-adjusted_cosine.txt"
 #topk_to_file(writePath,item_sim,10)
