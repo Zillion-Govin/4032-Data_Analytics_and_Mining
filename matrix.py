@@ -43,6 +43,3 @@ def get_matrix(path):
 
 if __name__ == "__main__":
     create_matrix(path = TRAIN_SOURCE,dest = FILE_PATH)
-    # print get_matrix()
-    # df = get_matrix()
-    # create_file(df.T,FILE_PATH)
