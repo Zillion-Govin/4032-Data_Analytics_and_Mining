@@ -17,6 +17,10 @@ def cos_sim(matrix, epsilon=1e-9):
     #print(norms)
     return (sim/norms/norms.T)
 
+#def cos_sim_without_zero(matrix):
+#    temp = matrix.T
+#    for i in length(temp):
+    
 def correlation_sim(matrix):
     return np.corrcoef(matrix.T)    
     
@@ -130,9 +134,21 @@ print("Train Sparsity: {:6.2f}%".format(sparsity))
 sparsity = float(len(test.nonzero()[0])) / n_user / n_item * 100
 print("Test Sparsity: {:6.2f}%".format(sparsity))
 
+## adjusted rating
+#user_mean_with_zero = [np.sum(i)/train.shape[1] for i in train]
+#adjusted_rating = np.subtract(train.T,user_mean_with_zero).T
+
+adjusted_rating_without_zero = train.copy()
+nonzero_pos = [i.nonzero() for i in train]
+user_mean_without_zero = [np.sum(train.take(i))/len(i[0]) for i in nonzero_pos]
+for i in range(len(nonzero_pos)):
+    for j in nonzero_pos[i]:
+        adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
+##
+
 #item_sim = cos_sim(train)
-#item_sim = 1-distance(train.T, metric='cosine')
-item_sim = correlation_sim(train)
+item_sim = 1-distance(adjusted_rating_without_zero.T, metric='cosine')
+#item_sim = correlation_sim(train) #correlation non adjusted
 #item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
 
