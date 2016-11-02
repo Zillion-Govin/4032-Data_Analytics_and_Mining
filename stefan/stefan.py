@@ -17,6 +17,9 @@ def cos_sim(matrix, epsilon=1e-9):
     #print(norms)
     return (sim/norms/norms.T)
 
+def correlation_sim(matrix):
+    return np.corrcoef(matrix.T)    
+    
 def predict_wsum(ratings,similarity):
     return ratings.dot(similarity)/ np.array([np.abs(similarity).sum(axis=0)])
     
@@ -128,7 +131,8 @@ sparsity = float(len(test.nonzero()[0])) / n_user / n_item * 100
 print("Test Sparsity: {:6.2f}%".format(sparsity))
 
 #item_sim = cos_sim(train)
-item_sim = 1-distance(train.T, metric='cosine')
+#item_sim = 1-distance(train.T, metric='cosine')
+item_sim = correlation_sim(train)
 #item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
 
