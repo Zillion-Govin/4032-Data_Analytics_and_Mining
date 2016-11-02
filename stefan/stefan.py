@@ -137,9 +137,9 @@ item_sim = correlation_sim(train)
 print(item_sim[:4,:4])
 
 #print(test[:4,:4])
-#k = [1,2,5,10,20,40,100]#,200,500]
-k = [10,11,12,13,14,15]
-#topk_mse(train,test,item_sim,k)
+k = [1,2,5,10,20,40,100]#,200,500]
+#k = [10,11,12,13,14,15]
+topk_mse(train,test,item_sim,k)
 
 #writePath = "top10-adjusted_cosine.txt"
 #topk_to_file(writePath,item_sim,10)
