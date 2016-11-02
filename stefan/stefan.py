@@ -48,10 +48,12 @@ def predict_topk(ratings,similarity,k):
     pred = np.zeros(ratings.shape).astype(np.float32)
     topk = get_topk_pos(similarity,k)
     for i in range(len(topk)):
+        #starttime = time.time()
         new_sim = similarity[i,topk[i]]
         for j in range(len(ratings)):
             new_rating = ratings[j,topk[i]]
             pred[j,i] = predict_wsum(new_rating,new_sim)
+        #print("pred {}: {}".format(i,time.time()-starttime))
     return pred
     
 def get_score(pred, actual):
@@ -114,7 +116,7 @@ def load_kc_sim(pathName,id_to_idx,eps=1e-9):
 trainingPathName = "./../dataset_partitioned/ratings_training.csv"
 testPathName = "./../dataset_partitioned/ratings_test.csv"
 headerName = ['user_id','item_id','rating','timestamp']
-simName = "./../similarity_matrix/" + "newest_adjusted_cosine" + ".csv"
+simName = "./../similarity_matrix/" + "similarity_cosine" + ".csv"
 
 
 train_df = loadDF(trainingPathName,headerName)
@@ -164,10 +166,10 @@ print("Test Sparsity: {:6.2f}%".format(sparsity))
 #        adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
 ##
 
-item_sim = cos_sim(train)
+#item_sim = cos_sim(train)
 #item_sim = cos_sim_without_zero(train)
 #item_sim = 1-distance(adjusted_rating_without_zero.T, metric='cosine')
-#item_sim = correlation_sim(train) #correlation non adjusted
+item_sim = correlation_sim(train) #correlation non adjusted
 #item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
 
