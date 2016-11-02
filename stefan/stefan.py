@@ -17,23 +17,41 @@ def cos_sim(matrix, epsilon=1e-9):
     #print(norms)
     return (sim/norms/norms.T)
 
-#def cos_sim_without_zero(matrix):
-#    temp = matrix.T
-#    for i in length(temp):
+def cos_sim_without_zero(matrix):
+    temp = matrix.T
+    sim = np.zeros((temp.shape[0],temp.shape[0]))
+    for i in range(len(temp)):
+        starttime = time.time()
+        for j in range(i,len(temp)):
+            temp_i = temp[i]
+            temp_j = temp[j]
+            x = temp_i * temp_j
+            nonzero = x.nonzero()
+            a = np.sqrt(np.sum(temp_i.take(nonzero)**2))
+            b = np.sqrt(np.sum(temp_j.take(nonzero)**2))
+            sim[i,j] = sim[j,i] = np.sum(x) / (a*b)
+        print("{}  {}".format(i,time.time()-starttime))
+    return sim
     
 def correlation_sim(matrix):
     return np.corrcoef(matrix.T)    
     
+
 def predict_wsum(ratings,similarity):
-    return ratings.dot(similarity)/ np.array([np.abs(similarity).sum(axis=0)])
+    nonzero_pos = ratings.nonzero()
+    if(np.count_nonzero(nonzero_pos)==0):
+        return 0
+    else:    
+        return ratings.dot(similarity)/ np.sum(similarity.take(nonzero_pos))
     
 def predict_topk(ratings,similarity,k):
     pred = np.zeros(ratings.shape).astype(np.float32)
     topk = get_topk_pos(similarity,k)
     for i in range(len(topk)):
         new_sim = similarity[i,topk[i]]
-        new_rating = ratings[:,topk[i]]
-        pred[:,i] = predict_wsum(new_rating,new_sim)
+        for j in range(len(ratings)):
+            new_rating = ratings[j,topk[i]]
+            pred[j,i] = predict_wsum(new_rating,new_sim)
     return pred
     
 def get_score(pred, actual):
@@ -138,16 +156,17 @@ print("Test Sparsity: {:6.2f}%".format(sparsity))
 #user_mean_with_zero = [np.sum(i)/train.shape[1] for i in train]
 #adjusted_rating = np.subtract(train.T,user_mean_with_zero).T
 
-adjusted_rating_without_zero = train.copy()
-nonzero_pos = [i.nonzero() for i in train]
-user_mean_without_zero = [np.sum(train.take(i))/len(i[0]) for i in nonzero_pos]
-for i in range(len(nonzero_pos)):
-    for j in nonzero_pos[i]:
-        adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
+#adjusted_rating_without_zero = train.copy()
+#nonzero_pos = [i.nonzero() for i in train]
+#user_mean_without_zero = [np.sum(train.take(i))/len(i[0]) for i in nonzero_pos]
+#for i in range(len(nonzero_pos)):
+#    for j in nonzero_pos[i]:
+#        adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
 ##
 
-#item_sim = cos_sim(train)
-item_sim = 1-distance(adjusted_rating_without_zero.T, metric='cosine')
+item_sim = cos_sim(train)
+#item_sim = cos_sim_without_zero(train)
+#item_sim = 1-distance(adjusted_rating_without_zero.T, metric='cosine')
 #item_sim = correlation_sim(train) #correlation non adjusted
 #item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
