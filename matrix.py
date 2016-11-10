@@ -28,7 +28,6 @@ def create_file(data,path):
 
 def create_matrix(path,dest):
     movie_list,user_list = get_list(path)
-    # range(0, len(user_list.keys()))
     data = pandas.DataFrame(0,columns=user_list.keys(),index=movie_list.keys(),dtype='uint8')
     with io.open(path, 'r', encoding=ENCODING) as source:
         for i, lines in enumerate(source, 0):

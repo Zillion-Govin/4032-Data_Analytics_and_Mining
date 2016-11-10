@@ -14,7 +14,6 @@ from sklearn.metrics import pairwise_distances as distance
 def cos_sim(matrix, epsilon=1e-9):
     sim = matrix.T.dot(matrix) + epsilon
     norms = np.array([np.sqrt(np.diagonal(sim))])
-    #print(norms)
     return (sim/norms/norms.T)
 
 def cos_sim_without_zero(matrix):
