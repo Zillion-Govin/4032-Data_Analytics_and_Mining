@@ -50,12 +50,6 @@ def correlation_similarity():
         for j in range(i,num_movie):
             tempMatrix = sou.iloc[1:,[i,j]]
             tempMatrix = tempMatrix.dropna(how='any')
-            '''if(tempI == 0 or tempJ == 0):
-                cosineSim[i][j] = -10
-                cosineSim[j][i] = -10
-            else:
-                cosineSim[i][j] = float("{0:.2f}".format(temp/((tempI**0.5)*(tempJ**0.5))))
-                cosineSim[j][i] = cosineSim[i][j]'''
             
             if(tempMatrix.empty):
                 result = 0
@@ -98,13 +92,6 @@ def adjusted_cosine_similarity():
         starttime = time.time()
         for j in range(i,num_movie):
             tempMatrix = sou.iloc[[i,j],1:].T.sub(averrating,axis='index').dropna(how='any')
-            
-            '''if(tempI == 0 or tempJ == 0):
-                cosineSim[i][j] = -10
-                cosineSim[j][i] = -10
-            else:
-                cosineSim[i][j] = float("{0:.2f}".format(temp/((tempI**0.5)*(tempJ**0.5))))
-                cosineSim[j][i] = cosineSim[i][j]'''
             
             if(tempMatrix.empty):
                 result = 0
