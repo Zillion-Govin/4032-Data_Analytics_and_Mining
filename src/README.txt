@@ -23,7 +23,13 @@
 +=======================+
 |	Dataset Splitting	|
 +=======================+
-*FARIS*
+Dataset Randomization:
+	- Open transform.ktr in Pentaho Data Integration
+	- Change the file location of original data if needed
+	- Run transformation and ratigs_randomized.dat will be generated
+Dataset Splitter:
+	- Run script "splitter.py"
+	- Two files "ratings_test.dat" and "ratings_training.dat" will be generated
 
 +===========================+
 |	Dataset Preprocessing	|
