@@ -15,33 +15,19 @@ def cos_sim(matrix, epsilon=1e-9):
     sim = matrix.T.dot(matrix) + epsilon
     norms = np.array([np.sqrt(np.diagonal(sim))])
     return (sim/norms/norms.T)
-
-def cos_sim_without_zero(matrix):
-    temp = matrix.T
-    sim = np.zeros((temp.shape[0],temp.shape[0]))
-    for i in range(len(temp)):
-        starttime = time.time()
-        for j in range(i,len(temp)):
-            temp_i = temp[i]
-            temp_j = temp[j]
-            x = temp_i * temp_j
-            nonzero = x.nonzero()
-            a = np.sqrt(np.sum(temp_i.take(nonzero)**2))
-            b = np.sqrt(np.sum(temp_j.take(nonzero)**2))
-            sim[i,j] = sim[j,i] = np.sum(x) / (a*b)
-        print("{}  {}".format(i,time.time()-starttime))
-    return sim
     
 def correlation_sim(matrix):
-    return np.corrcoef(matrix.T)    
+    return np.corrcoef(matrix.T)
     
 
 def predict_wsum(ratings,similarity):
+    ## improved
     nonzero_pos = ratings.nonzero()
     if(np.count_nonzero(nonzero_pos)==0):
         return 0
     else:    
         return ratings.dot(similarity)/ np.sum(similarity.take(nonzero_pos))
+    ## normal
     #return ratings.dot(similarity)/ np.sum(similarity)
     
 def predict_topk(ratings,similarity,k):
@@ -117,11 +103,10 @@ def load_kc_sim(pathName,id_to_idx,eps=1e-9):
 trainingPathName = "./../dataset_partitioned/ratings_training.csv"
 testPathName = "./../dataset_partitioned/ratings_test.csv"
 headerName = ['user_id','item_id','rating','timestamp']
-simName = "./../similarity_matrix/" + "newest_adjusted_cosine" + ".csv"
-
 
 train_df = loadDF(trainingPathName,headerName)
 test_df = loadDF(testPathName, headerName)
+
     
 n_item = train_df.item_id.unique()
 ## create index between df index and raw item_id
@@ -134,8 +119,8 @@ for i in range(n_item.shape[0]):
 
 n_item = n_item.shape[0]
 n_user = train_df.user_id.unique().shape[0]
-
 #print("{} {}".format(n_user,n_item))
+
 
 ## fill up matrix with training data
 train = np.zeros((n_user,n_item)).astype(np.float32)
@@ -155,10 +140,9 @@ print("Train Sparsity: {:6.2f}%".format(sparsity))
 sparsity = float(len(test.nonzero()[0])) / n_user / n_item * 100
 print("Test Sparsity: {:6.2f}%".format(sparsity))
 
-## adjusted rating
-#user_mean_with_zero = [np.sum(i)/train.shape[1] for i in train]
-#adjusted_rating = np.subtract(train.T,user_mean_with_zero).T
 
+## adjusted rating with 0
+## (in this case with 0 in the weighted sum calculation but mean centered without counting 0)
 adjusted_rating_without_zero = train.copy()
 nonzero_pos = [i.nonzero() for i in train]
 user_mean_without_zero = [np.sum(train[i].take(nonzero_pos[i][0]))/len(nonzero_pos[i][0]) for i in range(len(nonzero_pos))]
@@ -174,17 +158,26 @@ for i in range(len(nonzero_pos)):
         adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
 ##
 
-item_sim = cos_sim(adjusted_rating_without_zero)
-#item_sim = cos_sim_without_zero(train)
-#item_sim = 1-distance(adjusted_rating_without_zero.T, metric='cosine')
-#item_sim = correlation_sim(train) #correlation non adjusted
-#item_sim = load_kc_sim(simName,id2_index)
-print(item_sim[:4,:4])
+
+#cos_sim = cos_sim(train)
+#adjusted_cos_sim = cos_sim(adjusted_rating_without_zero)
+#correlation_sim = correlation_sim(train)
+
+## newest_adjusted_cosine = adjusted cosine without 0
+## similarity_cosine = cosine without 0
+## similarity_correlation = correlation without 0
+## change the name of the .csv below
+#simName = "./../similarity_matrix/" + "newest_adjusted_cosine" + ".csv"
+#without0_sim = load_kc_sim(simName,id2_index)
+
+#print(item_sim[:4,:4])
+
 
 #print(test[:4,:4])
-k = [2,5,10,20,40,100]#,200,500]
-#k = [10,11,12,13,14,15]
-topk_mse(train,test,item_sim,k)
+k = [1,2,5,10,20,40,100]
+## change sim with appropriate similarity
+topk_mse(train,test,cos_sim,k)
+
 
 #writePath = "top10-adjusted_cosine.txt"
 #topk_to_file(writePath,item_sim,10)
