@@ -160,23 +160,30 @@ print("Test Sparsity: {:6.2f}%".format(sparsity))
 #user_mean_with_zero = [np.sum(i)/train.shape[1] for i in train]
 #adjusted_rating = np.subtract(train.T,user_mean_with_zero).T
 
-#adjusted_rating_without_zero = train.copy()
-#nonzero_pos = [i.nonzero() for i in train]
-#user_mean_without_zero = [np.sum(train.take(i))/len(i[0]) for i in nonzero_pos]
-#for i in range(len(nonzero_pos)):
-#    for j in nonzero_pos[i]:
-#        adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
+adjusted_rating_without_zero = train.copy()
+nonzero_pos = [i.nonzero() for i in train]
+user_mean_without_zero = [np.sum(train[i].take(nonzero_pos[i][0]))/len(nonzero_pos[i][0]) for i in range(len(nonzero_pos))]
+
+alpha = 1
+global_mean = np.sum(user_mean_without_zero)/len(user_mean_without_zero)
+numEntry = np.array([len(i[0]) for i in nonzero_pos]).astype(np.float32)
+
+user_mean_without_zero = alpha/(alpha+numEntry)*global_mean + numEntry/(alpha+numEntry)*user_mean_without_zero
+
+for i in range(len(nonzero_pos)):
+    for j in nonzero_pos[i]:
+        adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
 ##
 
-#item_sim = cos_sim(adjusted_rating)
+item_sim = cos_sim(adjusted_rating_without_zero)
 #item_sim = cos_sim_without_zero(train)
 #item_sim = 1-distance(adjusted_rating_without_zero.T, metric='cosine')
 #item_sim = correlation_sim(train) #correlation non adjusted
-item_sim = load_kc_sim(simName,id2_index)
+#item_sim = load_kc_sim(simName,id2_index)
 print(item_sim[:4,:4])
 
 #print(test[:4,:4])
-k = [1,2,5,10,20,40,100]#,200,500]
+k = [2,5,10,20,40,100]#,200,500]
 #k = [10,11,12,13,14,15]
 topk_mse(train,test,item_sim,k)
 
