@@ -19,28 +19,27 @@ def cos_sim(matrix, epsilon=1e-9):
 def correlation_sim(matrix):
     return np.corrcoef(matrix.T)
     
-
 def predict_wsum(ratings,similarity):
-    ## improved
+    ## IMPROVED WEIGHTED SUM
     nonzero_pos = ratings.nonzero()
     if(np.count_nonzero(nonzero_pos)==0):
         return 0
     else:    
         return ratings.dot(similarity)/ np.sum(similarity.take(nonzero_pos))
-    ## normal
+    ############################
+
+    ## NORMAL WEIGHTED SUM
     #return ratings.dot(similarity)/ np.sum(similarity)
-    
+    ############################
+
 def predict_topk(ratings,similarity,k):
     pred = np.zeros(ratings.shape).astype(np.float32)
     topk = get_topk_pos(similarity,k)
     for i in range(len(topk)):
-        #starttime = time.time()
         new_sim = similarity[i,topk[i]]
         for j in range(len(ratings)):
             new_rating = ratings[j,topk[i]]
             pred[j,i] = predict_wsum(new_rating,new_sim)
-        #pred[:,i] = predict_wsum(ratings[:,topk[i]],new_sim)
-        #print("pred {}: {}".format(i,time.time()-starttime))
     return pred
     
 def get_score(pred, actual):
@@ -69,7 +68,6 @@ def topk_mse(train,test,item_sim,k):
     for i in k:
         starttime = time.time()
         prediction = predict_topk(train,item_sim,i)
-        #print(prediction[:4,:4])
         train_mse.append(get_score(prediction,train))
         test_mse.append(get_score(prediction,test))
         print("k={}, time={}".format(i,time.time()-starttime))
@@ -106,33 +104,28 @@ headerName = ['user_id','item_id','rating','timestamp']
 
 train_df = loadDF(trainingPathName,headerName)
 test_df = loadDF(testPathName, headerName)
-
     
 n_item = train_df.item_id.unique()
+
 ## create index between df index and raw item_id
 index2_id = {}
 id2_index = {}
 for i in range(n_item.shape[0]):
-    #print("{} {}".format(i,n_item[i]))
     index2_id[i] = n_item[i]
     id2_index[n_item[i]] = i
 
 n_item = n_item.shape[0]
 n_user = train_df.user_id.unique().shape[0]
-#print("{} {}".format(n_user,n_item))
-
 
 ## fill up matrix with training data
 train = np.zeros((n_user,n_item)).astype(np.float32)
-for i in train_df.itertuples():
-    #print( id2_index[i[2]])    
+for i in train_df.itertuples():  
     train[i[1]-1, id2_index[i[2]]] = i[3]
 print(train[:4,:4])
 
 ## create separate matrix to contain actual data (for testing)
 test = np.zeros((n_user,n_item)).astype(np.float32)
 for i in test_df.itertuples():
-    #print( id2_index[i[2]])
     test[i[1]-1, id2_index[i[2]]] = i[3]
 
 sparsity = float(len(train.nonzero()[0])) / n_user / n_item * 100
@@ -156,28 +149,25 @@ user_mean_without_zero = alpha/(alpha+numEntry)*global_mean + numEntry/(alpha+nu
 for i in range(len(nonzero_pos)):
     for j in nonzero_pos[i]:
         adjusted_rating_without_zero[i,j] = adjusted_rating_without_zero[i,j] - user_mean_without_zero[i]
-##
 
+## SIMILARITY MATRIX WITH 0
+# cos_sim = cos_sim(train)
+# adjusted_cos_sim = cos_sim(adjusted_rating_without_zero)
+# correlation_sim = correlation_sim(train)
 
-#cos_sim = cos_sim(train)
-#adjusted_cos_sim = cos_sim(adjusted_rating_without_zero)
-#correlation_sim = correlation_sim(train)
+## SIMILARITY MATRIX WITHOUT 0
+# sim_path = "./../similarity_matrix/" + "similarity_cosine" + ".csv"
+# sim_path = "./../similarity_matrix/" + "similarity_correlation" + ".csv"
+# sim_path = "./../similarity_matrix/" + "similarity_adjusted_cosine" + ".csv"
 
-## newest_adjusted_cosine = adjusted cosine without 0
-## similarity_cosine = cosine without 0
-## similarity_correlation = correlation without 0
-## change the name of the .csv below
-#simName = "./../similarity_matrix/" + "newest_adjusted_cosine" + ".csv"
-#without0_sim = load_kc_sim(simName,id2_index)
+## LOAD SIMILARITY MATRIX WITHOUT 0
+# without_0 = load_kc_sim(sim_path,id2_index)
 
-#print(item_sim[:4,:4])
-
-
-#print(test[:4,:4])
+## number of k nearest neighbours
 k = [1,2,5,10,20,40,100]
-## change sim with appropriate similarity
-topk_mse(train,test,cos_sim,k)
 
-
-#writePath = "top10-adjusted_cosine.txt"
-#topk_to_file(writePath,item_sim,10)
+## PREDICTION MSE
+# topk_mse(train,test,cos_sim,k)
+# topk_mse(train,test,adjusted_cos_sim,k)
+# topk_mse(train,test,correlation_sim,k)
+# topk_mse(train,test,without_0,k)
